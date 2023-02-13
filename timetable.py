@@ -13,6 +13,7 @@ class Timetable:
 
     @classmethod
     def create_output_folders(cls):
+        os.mkdir("output")
         os.mkdir(cls.YAML_DIR)
         os.mkdir(cls.PDF_DIR)
 
