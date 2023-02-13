@@ -30,13 +30,13 @@ class AKZScraper:
             case "wt":
                 return 1
             case "sr":
-                return 3
+                return 2
             case "cz":
-                return 4
+                return 3
             case "pt":
-                return 5
+                return 4
             case "so":
-                return 6
+                return 5
             case _:
                 assert False, f"fucked up akz weekday with {weekday} argument"
 
