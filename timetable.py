@@ -51,7 +51,7 @@ class Timetable:
             case 4:
                 return "F"
             case 5:
-                return "S"
+                return "Sat"
             case _:
                 raise Exception("you fucking dumbass invalid weekday index")
 
@@ -103,7 +103,7 @@ class Timetable:
         with open(f"{self.YAML_DIR}/{file_name}.yaml", "w+") as file:
             file.write(entry)
         os.chdir(os.getcwd())
-        os.system(f"pdfschedule --no-weekends --start-monday {self.YAML_DIR}/{file_name}.yaml {self.PDF_DIR}/{file_name}.pdf")
+        os.system(f"pdfschedule --start-monday {self.YAML_DIR}/{file_name}.yaml {self.PDF_DIR}/{file_name}.pdf")
 
     @staticmethod
     def convert_to_latin(char: str) -> str:
