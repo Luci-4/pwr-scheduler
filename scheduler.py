@@ -36,6 +36,11 @@ class Scheduler:
                 return True
         return False
 
+    def get_all_possible_scoring_attributes_names(self):
+        random_class = [i for i in self.classes_dict.values() if isinstance(i, Class)][0]
+        return list(random_class.score_attributes_dict.keys())
+
+
     def update_classes(self, classes: list[Class | AKZClass]):
         for class_ in classes:
             self.classes_dict[class_.code] = class_
