@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 class Scheduler:
     __PLOTS_DIR = "plots"
     def __init__(self, all_data_file_path: str) -> None:
-        
+        self.create_folders() 
         Timetable.clear_output_folders()
         with open(all_data_file_path, encoding="utf-8") as file:
             lines = [line.strip() for line in file]
