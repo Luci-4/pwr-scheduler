@@ -59,8 +59,10 @@ class Scheduler:
     @classmethod
     def clear_output_folders(cls):
         user_agreed("all of your timetables will be lost: confirm action (y/n):")
-        
-        Timetable.clear_output_folders()
+        try: 
+            Timetable.clear_output_folders()
+        except FileNotFoundError:
+            pass
 
 
     def __found_colisions(self, classes: list[Class]):
