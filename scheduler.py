@@ -121,10 +121,7 @@ class Scheduler:
 
         for class_ in self.classes_dict.values():
             classes_by_course_code[class_.course.code].append(class_)
-        sort_key_function = lambda classes_in_course: max([class_.score for class_ in classes_in_course])
-        classes_by_courses_sorted_by_max_score = sorted(list(classes_by_course_code.values()), key=sort_key_function, reverse=False)
-
-        product_result = list(itertools.product(*classes_by_courses_sorted_by_max_score))
+        product_result = list(itertools.product(*list(classes_by_course_code.values())))
         schedules = [Schedule(s ,emergent_scoring_callbacks) for i, s in enumerate(product_result) if not self.__found_colisions(s)]
         schedules = sorted(schedules, key=lambda s: s.score, reverse=True)
 
