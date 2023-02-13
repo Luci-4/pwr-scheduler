@@ -43,4 +43,4 @@ class Schedule:
     def score(self):
         # for i in sorted(self.classes, key=lambda x: int(x.code[-2:-4:-1])):
         #     print(i.code, i.score)
-        return sum([i.score for i in self.classes])
+        return sum([i.score for i in self.classes]) + self.__additional_emergent_score
