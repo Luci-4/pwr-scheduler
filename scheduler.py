@@ -26,9 +26,12 @@ class Scheduler:
         self.scoring_context = ScoringContext()
 
     def create_folders(self):
-        Timetable.create_output_folders()
-        ScoringContext.create_scoring_folder()
-        os.mkdir(Scheduler.__PLOTS_DIR)
+        try:
+            Timetable.create_output_folders()
+            ScoringContext.create_scoring_folder()
+            os.mkdir(Scheduler.__PLOTS_DIR)
+        except FileExistsError:
+            pass
 
     def __course_in_courses(self, course: Course):
         for old_course in self.courses:
