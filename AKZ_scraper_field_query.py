@@ -6,6 +6,9 @@ class AKZFieldQuery:
     teacher: str = None
 
     def matches(self, name: str, teacher: str):
+        if self.name is None and self.teacher is None:
+            return True
+            
         if self.name and self.teacher:
             return self.name.lower() in name.lower() and self.teacher.lower() in teacher.lower()
 

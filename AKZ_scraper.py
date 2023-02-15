@@ -87,7 +87,7 @@ class AKZScraper:
             if not (field_query.matches(name, teacher) and level == "I"):
                 continue
             class_identifier = ClassIdentifier(class_code,1)
-            course = Course(name, course_code, 1)
+            course = Course(name, "WFC" if course_code[:2] == "WF" else "JZC", 1)
             try:
                 class_multi_time, class_multi_location = cls.__parse_to_multi_time_and_location(day_time_location)
             except EmptyWeekdayError:
