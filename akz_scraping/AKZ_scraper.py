@@ -11,19 +11,52 @@ from class_course_abstraction.class_multi_time import ClassMultiTime
 from class_course_abstraction.class_multi_location import ClassMultiLocation
 from class_course_abstraction.course.course import Course
 
+from user_input import user_agreed
+
 class EmptyWeekdayError(Exception): pass
 
 class AKZScraper:
     __URL =  "http://www.akz.pwr.edu.pl/katalog_zap.html"
+    __DUMPING_FILE = ".akz-classes.csv"
 
     @classmethod
-    def __get_all_table_rows(cls):
+    def scrape_all_table_rows(cls) -> None:
+        if not user_agreed("updating courses data from www.akz.pwr.edu.pl: confirm action (y/n):"):
+            return
+
         page = requests.get(cls.__URL)
         soup = BeautifulSoup(page.content, "html.parser")
         with open("index.html", "w+", encoding="utf-8") as file:
             file.write(page.text)
-        results = soup.find_all(class_="gradeX")
-        return results
+        table_rows = soup.find_all(class_="gradeX")
+        cls.__dump_rows_to_file(table_rows)
+
+    @classmethod
+    def __dump_rows_to_file(cls, table_rows) -> None:
+        contents = ""
+        for table_row in table_rows:
+            course_code, class_code, name, day_time_location, teacher, seats_taken, all_seats, offline, level, _ =[i.get_text(strip=True, separator="\n") for i in table_row.find_all("td")]
+            contents += f"{course_code},{class_code},{name},{day_time_location},{teacher},{seats_taken},{all_seats},{offline},{level}".replace("\n", "\t")
+            contents += "\n"
+
+        with open(cls.__DUMPING_FILE, "w+", encoding="utf-8") as file:
+            file.write(contents)
+
+    @classmethod
+    def __try_to_get_all_rows(cls):
+        with open(cls.__DUMPING_FILE, "r", encoding="utf-8") as file:
+            rows = [i.strip().split(",") for i in file]
+        return rows
+
+    @classmethod
+    def __get_all_rows(cls):
+        try:
+            rows = cls.__try_to_get_all_rows()
+            return rows
+        except FileNotFoundError:
+            cls.scrape_all_table_rows()
+            rows = cls.__try_to_get_all_rows()
+            return rows
 
     @staticmethod
     def __convert_to_weekday_index(weekday: str) -> int:
@@ -73,7 +106,7 @@ class AKZScraper:
     def __parse_to_multi_time_and_location(cls, day_time_location: list[str]) -> tuple[ClassTime, ClassLocation]:
         times = []
         locations = []
-        day_time_location = day_time_location.split("\n")
+        day_time_location = day_time_location.split("\t")
         for second_index in range(1, len(day_time_location), 2):
             day_time = day_time_location[second_index-1]
             times.append(cls.__parse_to_class_time(day_time))
@@ -93,9 +126,9 @@ class AKZScraper:
     @classmethod
     def get_classes_by_queries(cls, queries: list[AKZQuery]) -> list:
         classes = []
-        table_rows = cls.__get_all_table_rows()
-        for table_row in table_rows:
-            course_code, class_code, name, day_time_location, teacher, seats_taken, all_seats, offline, level, _ =[i.get_text(strip=True, separator="\n") for i in table_row.find_all("td")]
+        rows = cls.__get_all_rows()
+        for row in rows:
+            course_code, class_code, name, day_time_location, teacher, seats_taken, all_seats, offline, level = row
             class_identifier = ClassIdentifier(class_code,1)
             course = Course(name, "WFC" if course_code[:2] == "WF" else "JZC", 1)
 

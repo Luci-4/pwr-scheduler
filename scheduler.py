@@ -22,7 +22,7 @@ class Scheduler:
         classes = [Class.init_from_line(line) for line in lines]
         self.classes_dict = {}
         self.courses: list[Course] = [Course.init_from_line(line) for line in lines]
-        self.update_classes(classes)
+        self.add_classes(classes)
         self.scoring_context = ScoringContext()
 
     def create_folders(self):
@@ -44,7 +44,7 @@ class Scheduler:
         return list(random_class.score_attributes_dict.keys())
 
 
-    def update_classes(self, classes: list[Class | AKZClass]):
+    def add_classes(self, classes: list[Class | AKZClass]):
         for class_ in classes:
             self.classes_dict[class_.code] = class_
             if self.__course_in_courses(class_.course):
@@ -58,7 +58,8 @@ class Scheduler:
 
     @classmethod
     def clear_output_folders(cls):
-        user_agreed("all of your timetables will be lost: confirm action (y/n):")
+        if not user_agreed("all of your timetables will be lost: confirm action (y/n):"):
+            return
         try: 
             Timetable.clear_output_folders()
         except FileNotFoundError:
@@ -76,8 +77,6 @@ class Scheduler:
 
     def grade_schedule_by_class_codes(self, class_codes: list[str]):
         return Schedule([self.classes_dict[class_code] for class_code in class_codes]).score
-
-
 
     def dump_to_datafile(self, schedule_index: int, end: int | None = None):
         if end is None:
@@ -114,15 +113,48 @@ class Scheduler:
         plt.plot([i.index for i in self.schedules], [i.score for i in self.schedules])
         plt.savefig(f"{Scheduler.__PLOTS_DIR}/score_by_index_plot.png")
 
-    def plan(self, emergent_scoring_callbacks=None):
-        self.__load_scores()
-        if emergent_scoring_callbacks is None:
-            emergent_scoring_callbacks = []
+    def __filter_classes_by_course_code_by_required(self, classes_by_course_code, required_class_codes: list[str]): 
+        for required_class_code in required_class_codes:
+            required_class = self.classes_dict[required_class_code]
+            required_class_course_code = required_class.course.code
+            classes_by_course_code[required_class_course_code] = [required_class]
+        return classes_by_course_code
+
+    def __generate_classes_by_course_code_with_required_and_excluded(
+            self, 
+            required_class_codes: list[str], 
+            excluded_class_codes: list[str]
+        ): 
 
         classes_by_course_code = {course.code:[] for course in self.courses}
 
         for class_ in self.classes_dict.values():
+            if class_.code in excluded_class_codes:
+                continue
             classes_by_course_code[class_.course.code].append(class_)
+        classes_by_course_code = self.__filter_classes_by_course_code_by_required(classes_by_course_code, required_class_codes)
+
+        return classes_by_course_code
+
+
+    def plan(
+        self, 
+        emergent_scoring_callbacks=None, 
+        required_class_codes: list[str] | None = None, 
+        excluded_class_codes: list[str] | None = None
+        ):
+        if emergent_scoring_callbacks is None:
+            emergent_scoring_callbacks = []
+
+        if required_class_codes is None:
+            required_class_codes = []
+
+        if excluded_class_codes is None:
+            excluded_class_codes = []
+
+        self.__load_scores()
+        
+        classes_by_course_code = self.__generate_classes_by_course_code_with_required_and_excluded(required_class_codes, excluded_class_codes)
         product_result = list(itertools.product(*list(classes_by_course_code.values())))
         schedules = [Schedule(s ,emergent_scoring_callbacks) for i, s in enumerate(product_result) if not self.__found_colisions(s)]
         schedules = sorted(schedules, key=lambda s: s.score, reverse=True)

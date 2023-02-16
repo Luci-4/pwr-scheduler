@@ -32,6 +32,6 @@ class ClassMultiTime:
     def __repr__(self):
         result = ""
         for time in self.times:
-            result += f"{time.start_str},{time.end_str},{time.weekday},{time.week_parity}"
+            result += f"{time} "
         return result
     

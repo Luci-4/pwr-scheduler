@@ -41,7 +41,7 @@ class ClassTime:
         return datetime.strftime(self.end,'%H:%M')
 
     def __repr__(self):
-        return f"{self.start_str},{self.end_str},{self.weekday_index},{self.week_parity}"
+        return f"{self.start_str},{self.end_str},{self.weekday},{self.week_parity}"
 
     @property
     def weekday(self):
