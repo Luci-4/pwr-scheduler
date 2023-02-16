@@ -26,9 +26,10 @@ class AKZScraper:
 
         page = requests.get(cls.__URL)
         soup = BeautifulSoup(page.content, "html.parser")
-        with open("index.html", "w+", encoding="utf-8") as file:
-            file.write(page.text)
         table_rows = soup.find_all(class_="gradeX")
+        if not (table_rows):
+            print("www.akz.pwr.edu.pl is not responding")
+            return
         cls.__dump_rows_to_file(table_rows)
 
     @classmethod
@@ -127,6 +128,9 @@ class AKZScraper:
     def get_classes_by_queries(cls, queries: list[AKZQuery]) -> list:
         classes = []
         rows = cls.__get_all_rows()
+        if not rows:
+            print("could not find any local AKZ courses data. Try using the scrape_all_table_rows function first")
+
         for row in rows:
             course_code, class_code, name, day_time_location, teacher, seats_taken, all_seats, offline, level = row
             class_identifier = ClassIdentifier(class_code,1)

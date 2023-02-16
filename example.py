@@ -2,6 +2,7 @@ from scheduler import Scheduler
 from akz_scraping.AKZ_query_and import AKZQueryAnd
 from akz_scraping.AKZ_scraper import AKZScraper
 from class_course_abstraction.class_ import Class
+from class_course_abstraction.AKZ_class import AKZClass
 
 # remove result from the previous run
 Scheduler.clear_output_folders()
@@ -51,6 +52,10 @@ scheduler.init_scoring_file("dzien-godzina", "day, hour")
 def less_classes_on_thursday(classes: list[Class]) -> float:
     score = 0
     for class_ in classes:
+        # check if the class is an akz class
+        if isinstance(class_, AKZClass):
+            continue
+
         weekday = class_.time.weekday
         is_on_thursday = weekday == "Czw"
         score -= 10*is_on_thursday
