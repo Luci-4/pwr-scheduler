@@ -11,5 +11,7 @@ class AKZQueryOr(AKZQuery):
     def matches(self, found_fields: AKZFields):
         result = False
         for searched, found in zip(self.values, found_fields.values):
+            if not searched:
+                continue
             result = result or (searched.lower() in found.lower())
         return result
