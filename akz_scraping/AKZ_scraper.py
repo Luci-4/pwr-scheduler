@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-from AKZ_scraper_field_query import AKZFieldQuery
+from akz_scraping.AKZ_query import AKZQuery
+from akz_scraping.AKZ_fields import AKZFields
 
 from class_course_abstraction.AKZ_class import AKZClass
 from class_course_abstraction.class_identifier import ClassIdentifier
@@ -19,6 +20,8 @@ class AKZScraper:
     def __get_all_table_rows(cls):
         page = requests.get(cls.__URL)
         soup = BeautifulSoup(page.content, "html.parser")
+        with open("index.html", "w+", encoding="utf-8") as file:
+            file.write(page.text)
         results = soup.find_all(class_="gradeX")
         return results
 
@@ -78,22 +81,38 @@ class AKZScraper:
             locations.append(cls.__parse_to_class_location(location_str))
         return ClassMultiTime(times), ClassMultiLocation(locations)
 
+
     @classmethod
-    def get_classes_by_field_query(cls, field_query: AKZFieldQuery):
+    def __matches_with_any_query(cls, queries, found_fields: AKZFields):
+        
+        for query in queries:
+            if query.matches(found_fields):
+                return True
+        return False
+
+    @classmethod
+    def get_classes_by_queries(cls, queries: list[AKZQuery]) -> list:
         classes = []
         table_rows = cls.__get_all_table_rows()
         for table_row in table_rows:
             course_code, class_code, name, day_time_location, teacher, seats_taken, all_seats, offline, level, _ =[i.get_text(strip=True, separator="\n") for i in table_row.find_all("td")]
-            if not (field_query.matches(name, teacher) and level == "I"):
-                continue
             class_identifier = ClassIdentifier(class_code,1)
             course = Course(name, "WFC" if course_code[:2] == "WF" else "JZC", 1)
+
+            if level != "I":
+                continue
+
             try:
                 class_multi_time, class_multi_location = cls.__parse_to_multi_time_and_location(day_time_location)
             except EmptyWeekdayError:
                 continue
 
+            found_fields = AKZFields(name=name, teacher=teacher, class_code=class_code, course_code=course_code)
+
+            if not cls.__matches_with_any_query(queries, found_fields):
+                continue
+
             class_ = AKZClass(teacher,class_identifier,course,class_multi_location, class_multi_time)
             classes.append(class_)
-        return classes
 
+        return classes

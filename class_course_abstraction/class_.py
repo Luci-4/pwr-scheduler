@@ -63,10 +63,6 @@ class Class:
 
     def get_score_attrs_values_with_identifier(self, fields):
         return [str(self.identifier.code)]+[self.score_attributes_dict[field] for field in fields]
-
-    def get_score_attrs_values_formated(self, fields):
-        all_elems = [str(self.identifier)]+[self.score_attributes_dict[field] for field in fields]
-        return ",".join(all_elems) + ","
         
     @staticmethod
     def sort_callback_by_code(class_):
