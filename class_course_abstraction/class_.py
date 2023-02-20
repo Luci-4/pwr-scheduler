@@ -67,7 +67,9 @@ class Class:
     @staticmethod
     def sort_callback_by_code(class_):
         code = class_.identifier.code
-        return ord(code[-1])/ord('z') + int(code[code.index("-")+1: -1])
+        after_dash = code[code.index('-'):]
+        code_number = int("".join([i for i in after_dash if i.isnumeric()]))
+        return ord(code[-1].lower())/ord('z') + code_number 
 
     @classmethod
     def init_from_line(cls, line: str):

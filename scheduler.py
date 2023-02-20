@@ -104,6 +104,10 @@ class Scheduler:
     def __update_classes_scores(self, scores_dict: dict[str, float]):
         for class_code, score in scores_dict.items():
             
+            if not(class_code in self.classes_dict):
+                print(f"warning: scored class code {class_code} not found in loaded classes")
+                print("ignoring...")
+                continue
             self.classes_dict[class_code].score += score
 
     def __save_to_plots(self):
